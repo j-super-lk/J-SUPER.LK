@@ -15,8 +15,6 @@
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px);} to { opacity: 1; transform: translateY(0);} }
-        
-        /* Blinking animation for new orders */
         @keyframes blinker { 50% { opacity: 0; } }
         .blink-me { animation: blinker 1s linear infinite; }
     </style>
@@ -31,13 +29,15 @@
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
             <button onclick="switchTab('ordersTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center justify-between group active-btn">
-                <span class="flex items-center gap-3"><i class="fa-solid fa-bell text-yellow-400 group-hover:scale-110 transition"></i> Live Orders</span>
+                <span class="flex items-center gap-3"><i class="fa-solid fa-bell text-yellow-400"></i> Live Orders</span>
                 <span id="orderBadge" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full hidden">0</span>
             </button>
-            <button onclick="switchTab('productsTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center gap-3 group"><i class="fa-solid fa-box text-green-400 group-hover:scale-110 transition"></i> Inventory</button>
-            <button onclick="switchTab('adsTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center gap-3 group"><i class="fa-solid fa-image text-purple-400 group-hover:scale-110 transition"></i> Banners / Ads</button>
-            <button onclick="switchTab('settingsTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center gap-3 group"><i class="fa-solid fa-gear text-orange-400 group-hover:scale-110 transition"></i> Web Settings</button>
-            <button onclick="switchTab('directorsTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center gap-3 group"><i class="fa-solid fa-users text-blue-400 group-hover:scale-110 transition"></i> Directors Board</button>
+            <button onclick="switchTab('reportsTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center gap-3"><i class="fa-solid fa-chart-pie text-blue-400"></i> POS & Reports</button>
+            <button onclick="switchTab('productsTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center gap-3"><i class="fa-solid fa-box text-green-400"></i> Inventory</button>
+            <button onclick="switchTab('catsTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center gap-3"><i class="fa-solid fa-tags text-pink-400"></i> Categories</button>
+            <button onclick="switchTab('adsTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center gap-3"><i class="fa-solid fa-image text-purple-400"></i> Banners / Ads</button>
+            <button onclick="switchTab('settingsTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center gap-3"><i class="fa-solid fa-gear text-orange-400"></i> Web Settings</button>
+            <button onclick="switchTab('directorsTab')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-slate-800 transition font-bold text-sm flex items-center gap-3"><i class="fa-solid fa-users text-teal-400"></i> Directors Board</button>
         </nav>
         <div class="p-4 border-t border-slate-800">
             <a href="index.html" class="w-full block text-center bg-green-600 hover:bg-green-700 text-white font-black py-3 rounded-xl transition shadow-lg"><i class="fa-solid fa-globe mr-2"></i> VIEW SITE</a>
@@ -47,38 +47,50 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
         <header class="bg-white shadow-sm p-4 flex justify-between items-center z-10 border-b border-slate-200">
-            <div class="flex items-center gap-4">
-                <button class="md:hidden text-slate-800 text-2xl"><i class="fa-solid fa-bars"></i></button>
-                <h2 class="text-xl font-black text-slate-800" id="topTitle">Live Orders (WhatsApp Gateway)</h2>
-            </div>
+            <h2 class="text-xl font-black text-slate-800" id="topTitle">Live Orders</h2>
             
-            <!-- Audio Context Enable Button (Browsers block autoplay) -->
-            <button id="enableSoundBtn" onclick="enableAudioContext()" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg text-xs font-bold border border-red-200 blink-me"><i class="fa-solid fa-volume-up mr-1"></i> Enable Order Sounds</button>
+            <div class="flex items-center gap-4">
+                <input type="file" id="customSoundInput" accept="audio/*" class="text-[10px] w-48 hidden" onchange="changeNotifSound(this)">
+                <button onclick="document.getElementById('customSoundInput').click()" class="text-[10px] bg-slate-100 px-3 py-2 rounded-lg font-bold hover:bg-slate-200">Change Sound</button>
+                <button id="enableSoundBtn" onclick="enableAudioContext()" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg text-xs font-bold border border-red-200 blink-me"><i class="fa-solid fa-volume-up mr-1"></i> Enable Sound</button>
+            </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50 custom-scrollbar relative">
             
             <!-- LIVE ORDERS TAB -->
             <div id="ordersTab" class="tab-content active max-w-5xl mx-auto">
-                <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-r-xl mb-6 flex justify-between items-center shadow-sm">
-                    <div>
-                        <h3 class="font-black text-green-900 text-lg">Real-time Order Monitor</h3>
-                        <p class="text-sm text-green-700 font-medium mt-1">When a customer checks out, the order is saved here, a sound plays, and the customer is redirected to WhatsApp.</p>
-                    </div>
-                    <!-- Sound setting -->
-                    <div class="bg-white p-2 rounded-lg shadow border border-green-200 text-right">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Custom Alert Sound</label>
-                        <input type="file" accept="audio/*" onchange="changeNotifSound(this)" class="text-[10px] w-48">
-                    </div>
-                </div>
-
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-4 bg-slate-800 text-white flex justify-between items-center">
                         <h4 class="font-bold"><i class="fa-solid fa-list mr-2"></i> Recent Orders</h4>
                         <button onclick="clearOrders()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold transition">Clear All</button>
                     </div>
-                    <div id="ordersContainer" class="divide-y divide-slate-100 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                        <!-- Orders JS injection -->
+                    <div id="ordersContainer" class="divide-y divide-slate-100 max-h-[70vh] overflow-y-auto custom-scrollbar"></div>
+                </div>
+            </div>
+            
+            <!-- REPORTS TAB -->
+            <div id="reportsTab" class="tab-content max-w-5xl mx-auto">
+                <h3 class="text-2xl font-black text-slate-800 mb-6">POS & Reports</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                        <h4 class="font-bold text-green-800 mb-4 border-b pb-2">Sales Report</h4>
+                        <div class="flex gap-2 mb-4">
+                            <input type="date" id="repStart" class="border p-2 rounded text-sm w-full bg-slate-50">
+                            <input type="date" id="repEnd" class="border p-2 rounded text-sm w-full bg-slate-50">
+                            <button onclick="generateSalesReport()" class="bg-green-600 text-white px-4 py-2 rounded font-bold text-sm">Run</button>
+                        </div>
+                        <div id="salesReportResult" class="bg-slate-50 p-4 rounded-xl min-h-[100px] border"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                        <h4 class="font-bold text-orange-800 mb-4 border-b pb-2">Inventory Report</h4>
+                        <div class="flex gap-2 mb-4">
+                            <select id="repInvCat" class="border p-2 rounded text-sm w-full bg-slate-50">
+                                <option value="all">All Categories</option>
+                            </select>
+                            <button onclick="generateInventoryReport()" class="bg-orange-500 text-white px-4 py-2 rounded font-bold text-sm">Run</button>
+                        </div>
+                        <div id="invReportResult" class="bg-slate-50 p-4 rounded-xl max-h-64 overflow-y-auto custom-scrollbar border"></div>
                     </div>
                 </div>
             </div>
@@ -87,7 +99,7 @@
             <div id="productsTab" class="tab-content max-w-6xl mx-auto">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-2xl font-black text-slate-800">Inventory <span class="bg-slate-200 text-slate-600 px-3 py-1 rounded-full text-sm ml-2 font-bold shadow-inner" id="prodCount">0</span></h3>
-                    <button onclick="document.getElementById('productModal').classList.remove('hidden')" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black hover:bg-green-700 shadow-lg transition transform hover:-translate-y-1"><i class="fa-solid fa-plus mr-2"></i> Add Item</button>
+                    <button onclick="openProductModal()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black hover:bg-green-700 shadow-lg transition transform hover:-translate-y-1"><i class="fa-solid fa-plus mr-2"></i> Add Item</button>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="overflow-x-auto">
@@ -98,69 +110,81 @@
                                     <th class="p-4">Name & Desc</th>
                                     <th class="p-4">Category</th>
                                     <th class="p-4">Type</th>
-                                    <th class="p-4">Price (Rs.)</th>
+                                    <th class="p-4">Price / Discount</th>
                                     <th class="p-4 text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="adminProductTable" class="divide-y divide-slate-100">
-                                <!-- Products JS injection -->
-                            </tbody>
+                            <tbody id="adminProductTable" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+            
+            <!-- CATEGORIES TAB -->
+            <div id="catsTab" class="tab-content max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-black text-slate-800">Categories & Subcategories</h3>
+                    <button onclick="addCategory()" class="bg-pink-600 text-white px-6 py-3 rounded-xl font-black hover:bg-pink-700 shadow-lg transition"><i class="fa-solid fa-plus mr-2"></i> New Category</button>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200" id="adminCatList"></div>
             </div>
 
             <!-- ADS TAB -->
             <div id="adsTab" class="tab-content max-w-4xl mx-auto">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-black text-slate-800">Banner Advertisements</h3>
+                    <h3 class="text-2xl font-black text-slate-800">Banner Ads</h3>
                     <button onclick="document.getElementById('adModal').classList.remove('hidden')" class="bg-purple-600 text-white px-6 py-3 rounded-xl font-black hover:bg-purple-700 shadow-lg transition"><i class="fa-solid fa-upload mr-2"></i> Upload Banner</button>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="adsGrid">
-                    <!-- Ads JS -->
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="adsGrid"></div>
             </div>
 
             <!-- WEB SETTINGS TAB -->
             <div id="settingsTab" class="tab-content max-w-4xl mx-auto pb-20">
                 <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-2 bg-orange-500"></div>
-                    <h3 class="text-2xl font-black text-slate-800 mb-8"><i class="fa-solid fa-gear text-orange-500 mr-2"></i> Website Configuration</h3>
+                    <h3 class="text-2xl font-black text-slate-800 mb-8"><i class="fa-solid fa-gear text-orange-500 mr-2"></i> Web & Payment Settings</h3>
                     
-                    <form id="settingsForm" onsubmit="saveWebSettings(event)" class="space-y-8">
-                        
-                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                            <label class="font-black text-slate-800 text-sm mb-3 block border-b pb-2"><i class="fa-brands fa-whatsapp text-green-500 mr-2 text-lg"></i> Admin WhatsApp Number (For Orders)</label>
-                            <input type="text" id="setWaAdmin" class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-green-400 focus:border-green-400 focus:outline-none font-bold" placeholder="e.g. 94706717695" required>
-                            <p class="text-[10px] text-slate-500 mt-2 font-medium">Format: Country code + Number without '+'. (E.g. 94706717695). Orders will be sent here.</p>
-                        </div>
-
-                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                            <label class="font-black text-slate-800 text-sm mb-3 block border-b pb-2"><i class="fa-solid fa-bars text-blue-500 mr-2 text-lg"></i> Top Navigation Links</label>
-                            <input type="text" id="setNavLinks" class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-green-400 focus:outline-none" required>
-                            <p class="text-[10px] text-slate-500 mt-2 font-medium">Comma Separated. Example: J SUPER PRODUCTS, EXCLUSIVES, LOYALTY, COMMUNITY, HELP</p>
-                        </div>
-
+                    <form id="settingsForm" onsubmit="saveWebSettings(event)" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                                <label class="font-black text-slate-800 text-sm mb-3 block border-b pb-2"><i class="fa-solid fa-address-card text-red-500 mr-2 text-lg"></i> Footer Contacts</label>
-                                <div class="space-y-4">
-                                    <textarea id="setAddress" rows="2" class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-green-400 focus:outline-none" placeholder="Company Address" required></textarea>
-                                    <textarea id="setPhones" rows="2" class="w-full border border-slate-300 rounded-lg p-3 focus:ring-2 focus:ring-green-400 focus:outline-none" placeholder="Phone numbers" required></textarea>
-                                </div>
+                            <div>
+                                <label class="font-black text-slate-700 text-sm mb-2 block">Admin WhatsApp (For Orders)</label>
+                                <input type="text" id="setWaAdmin" class="w-full border p-3 rounded-lg focus:outline-none focus:border-green-500 bg-slate-50" required>
                             </div>
+                            <div>
+                                <label class="font-black text-slate-700 text-sm mb-2 block">Top Nav Links (Comma Sep)</label>
+                                <input type="text" id="setNavLinks" class="w-full border p-3 rounded-lg focus:outline-none focus:border-green-500 bg-slate-50" required>
+                            </div>
+                        </div>
 
-                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                                <label class="font-black text-slate-800 text-sm mb-3 block border-b pb-2"><i class="fa-solid fa-share-nodes text-purple-500 mr-2 text-lg"></i> Social Media (Footer)</label>
-                                <div class="space-y-3">
-                                    <div class="flex items-center gap-3"><i class="fa-brands fa-facebook w-6 text-blue-600 text-xl text-center"></i> <input type="url" id="setFb" class="w-full border border-slate-300 rounded-lg p-2 focus:outline-none focus:border-green-500 text-sm" placeholder="Facebook URL"></div>
-                                    <div class="flex items-center gap-3"><i class="fa-brands fa-whatsapp w-6 text-green-500 text-xl text-center"></i> <input type="url" id="setWa" class="w-full border border-slate-300 rounded-lg p-2 focus:outline-none focus:border-green-500 text-sm" placeholder="WhatsApp URL"></div>
-                                    <div class="flex items-center gap-3"><i class="fa-brands fa-instagram w-6 text-pink-600 text-xl text-center"></i> <input type="url" id="setIg" class="w-full border border-slate-300 rounded-lg p-2 focus:outline-none focus:border-green-500 text-sm" placeholder="Instagram URL"></div>
-                                </div>
+                        <div class="border-t border-slate-200 pt-6">
+                            <h4 class="font-black text-lg mb-4 text-slate-700">Payment Setup</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="text-xs font-bold">Bank Details</label><textarea id="setBank" class="w-full border p-2 rounded text-xs" rows="3"></textarea></div>
+                                <div><label class="text-xs font-bold">PayPal Email</label><input type="text" id="setPaypal" class="w-full border p-2 rounded text-xs"></div>
+                                <div><label class="text-xs font-bold">Crypto (Binance)</label><textarea id="setCrypto" class="w-full border p-2 rounded text-xs" rows="3"></textarea></div>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-200 pt-6">
+                            <h4 class="font-black text-lg mb-4 text-slate-700">Footer Text Pages</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="text-xs font-bold">About Us</label><textarea id="setAbout" class="w-full border p-2 rounded text-xs" rows="3"></textarea></div>
+                                <div><label class="text-xs font-bold">FAQ</label><textarea id="setFaq" class="w-full border p-2 rounded text-xs" rows="3"></textarea></div>
+                                <div><label class="text-xs font-bold">Privacy Notice</label><textarea id="setPrivacy" class="w-full border p-2 rounded text-xs" rows="3"></textarea></div>
+                                <div><label class="text-xs font-bold">Terms & Conditions</label><textarea id="setTerms" class="w-full border p-2 rounded text-xs" rows="3"></textarea></div>
+                                <div class="col-span-1 md:col-span-2"><label class="text-xs font-bold">Delivery Grid</label><textarea id="setDelivery" class="w-full border p-2 rounded text-xs" rows="2"></textarea></div>
                             </div>
                         </div>
                         
-                        <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl hover:bg-slate-800 transition shadow-xl text-lg"><i class="fa-solid fa-save mr-2"></i> Apply Changes to Website</button>
+                        <div class="border-t border-slate-200 pt-6">
+                            <h4 class="font-black text-lg mb-4 text-slate-700">Company Details</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="text-xs font-bold">Address</label><textarea id="setAddress" class="w-full border p-2 rounded text-xs" rows="2"></textarea></div>
+                                <div><label class="text-xs font-bold">Phones</label><textarea id="setPhones" class="w-full border p-2 rounded text-xs" rows="2"></textarea></div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl hover:bg-slate-800 transition shadow-xl text-lg"><i class="fa-solid fa-save mr-2"></i> Save All Settings</button>
                     </form>
                 </div>
             </div>
@@ -169,64 +193,64 @@
             <div id="directorsTab" class="tab-content max-w-5xl mx-auto">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-2xl font-black text-slate-800">Board of Directors</h3>
-                    <button onclick="document.getElementById('dirModal').classList.remove('hidden')" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-black hover:bg-blue-700 shadow-lg transition"><i class="fa-solid fa-plus mr-2"></i> Add Director</button>
+                    <button onclick="document.getElementById('dirModal').classList.remove('hidden')" class="bg-teal-600 text-white px-6 py-3 rounded-xl font-black hover:bg-teal-700 shadow-lg transition"><i class="fa-solid fa-plus mr-2"></i> Add Director</button>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="adminDirGrid">
-                    <!-- Directors JS -->
-                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="adminDirGrid"></div>
             </div>
 
         </div>
     </main>
 
-    <!-- Modals Background & Logic -->
-
     <!-- Product Modal -->
-    <div id="productModal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl relative border-t-4 border-green-500">
+    <div id="productModal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm transition-opacity overflow-y-auto">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-2xl shadow-2xl relative border-t-4 border-green-500 my-8">
             <button onclick="closeModal('productModal')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-times"></i></button>
-            <h3 class="text-xl font-black text-slate-800 mb-6"><i class="fa-solid fa-box text-green-500 mr-2"></i> Add New Product</h3>
+            <h3 class="text-xl font-black text-slate-800 mb-6"><i class="fa-solid fa-box text-green-500 mr-2"></i> Add / Edit Product</h3>
             
-            <form onsubmit="saveProduct(event)" class="space-y-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <form onsubmit="saveProduct(event)" class="space-y-4">
+                <input type="hidden" id="pId">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="text-xs font-black uppercase mb-1 block">Product Name</label><input type="text" id="pName" class="w-full border p-2 rounded-lg bg-slate-50 focus:border-green-500 outline-none" required></div>
                     <div>
-                        <label class="text-xs font-black text-slate-700 uppercase mb-1 block">Product Name</label>
-                        <input type="text" id="pName" class="w-full border border-slate-300 rounded-lg p-2 focus:border-green-500 focus:outline-none bg-slate-50" required>
-                    </div>
-                    <div>
-                        <label class="text-xs font-black text-slate-700 uppercase mb-1 block">Category</label>
-                        <input type="text" id="pCat" placeholder="e.g. Grocery, Vegetables" class="w-full border border-slate-300 rounded-lg p-2 focus:border-green-500 focus:outline-none bg-slate-50" required>
-                    </div>
-                    <div>
-                        <label class="text-xs font-black text-slate-700 uppercase mb-1 block">Price (Rs.)</label>
-                        <input type="number" step="0.01" id="pPrice" class="w-full border border-slate-300 rounded-lg p-2 focus:border-green-500 focus:outline-none bg-slate-50 font-bold text-green-700" required>
-                    </div>
-                    <div>
-                        <label class="text-xs font-black text-slate-700 uppercase mb-1 block">Selling Type</label>
-                        <select id="pWeight" class="w-full border border-slate-300 rounded-lg p-2 focus:border-green-500 focus:outline-none bg-slate-50 font-bold" required>
+                        <label class="text-xs font-black uppercase mb-1 block">Selling Type</label>
+                        <select id="pWeight" class="w-full border p-2 rounded-lg bg-slate-50 focus:border-green-500 outline-none" required>
                             <option value="false">Unit / Pack (Per Item)</option>
                             <option value="true">Weighable (Per Kg/g)</option>
                         </select>
                     </div>
+                    
+                    <div>
+                        <label class="text-xs font-black uppercase mb-1 block">Category</label>
+                        <select id="pCat" onchange="updateSubcatDropdown()" class="w-full border p-2 rounded-lg bg-slate-50 focus:border-green-500 outline-none" required></select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-black uppercase mb-1 block">Sub-Category</label>
+                        <select id="pSubcat" class="w-full border p-2 rounded-lg bg-slate-50 focus:border-green-500 outline-none hidden"><option value="">No Sub-category</option></select>
+                    </div>
+
+                    <div><label class="text-xs font-black uppercase mb-1 block">Price (Rs.)</label><input type="number" step="0.01" id="pPrice" class="w-full border p-2 rounded-lg bg-slate-50 font-bold text-green-700 outline-none" required></div>
+                    
+                    <div>
+                        <label class="text-xs font-black uppercase mb-1 block">Discount Type</label>
+                        <select id="pDiscType" class="w-full border p-2 rounded-lg bg-slate-50 focus:border-green-500 outline-none">
+                            <option value="none">No Discount</option><option value="percent">Percentage (%)</option><option value="amount">Fixed Amount (Rs.)</option>
+                        </select>
+                    </div>
+                    <div><label class="text-xs font-black uppercase mb-1 block">Discount Value</label><input type="number" step="0.01" id="pDiscVal" class="w-full border p-2 rounded-lg bg-slate-50 outline-none" value="0"></div>
                 </div>
 
-                <div>
-                    <label class="text-xs font-black text-slate-700 uppercase mb-1 block">Short Description</label>
-                    <textarea id="pDesc" rows="2" class="w-full border border-slate-300 rounded-lg p-2 focus:border-green-500 focus:outline-none bg-slate-50"></textarea>
-                </div>
-
-                <div class="bg-slate-100 p-4 rounded-xl border border-dashed border-slate-300 flex items-center gap-4">
+                <div><label class="text-xs font-black uppercase mb-1 block">Short Description</label><textarea id="pDesc" rows="2" class="w-full border p-2 rounded-lg bg-slate-50 outline-none"></textarea></div>
+                
+                <div class="bg-slate-100 p-4 rounded-xl border border-dashed flex items-center gap-4">
                     <div class="flex-1">
-                        <label class="text-xs font-black text-slate-700 uppercase mb-1 block">Product Image</label>
-                        <input type="file" accept="image/*" onchange="convertImage(this, 'pImgB64')" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-green-600 file:text-white hover:file:bg-green-700 cursor-pointer">
+                        <label class="text-xs font-black uppercase mb-1 block">Product Image</label>
+                        <input type="file" accept="image/*" onchange="convertImage(this, 'pImgB64', 'pImgPreviewBox')" class="w-full text-xs">
                         <input type="hidden" id="pImgB64">
                     </div>
-                    <div class="w-16 h-16 bg-white border rounded-lg flex items-center justify-center overflow-hidden" id="pImgPreviewBox">
-                        <i class="fa-solid fa-image text-slate-300 text-xl"></i>
-                    </div>
+                    <div class="w-16 h-16 bg-white border rounded flex items-center justify-center overflow-hidden" id="pImgPreviewBox"><i class="fa-solid fa-image text-slate-300"></i></div>
                 </div>
 
-                <button type="submit" class="w-full bg-green-600 text-white font-black py-3 rounded-xl hover:bg-green-700 transition shadow-lg mt-4 text-lg">Save Product</button>
+                <button type="submit" class="w-full bg-green-600 text-white font-black py-3 rounded-xl shadow-lg mt-4 text-lg hover:bg-green-700 transition">Save Product</button>
             </form>
         </div>
     </div>
@@ -237,36 +261,24 @@
             <button onclick="closeModal('adModal')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-times"></i></button>
             <h3 class="text-xl font-black text-slate-800 mb-6"><i class="fa-solid fa-image text-purple-500 mr-2"></i> Upload Banner</h3>
             <form onsubmit="saveAd(event)" class="space-y-4">
-                <div class="bg-slate-100 p-6 rounded-xl border border-dashed border-purple-300 text-center">
-                    <input type="file" accept="image/*" onchange="convertImage(this, 'adImgB64')" class="mx-auto block text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-purple-600 file:text-white hover:file:bg-purple-700 cursor-pointer" required>
-                    <input type="hidden" id="adImgB64">
-                    <p class="text-[10px] text-slate-500 mt-4">Recommended Size: 1200x400 pixels (Wide rectangle)</p>
-                </div>
-                <button type="submit" class="w-full bg-purple-600 text-white font-black py-3 rounded-xl hover:bg-purple-700 transition shadow-lg">Add to Slider</button>
+                <input type="file" accept="image/*" onchange="convertImage(this, 'adImgB64', null)" class="w-full text-xs border p-4 rounded bg-slate-50" required>
+                <input type="hidden" id="adImgB64">
+                <button type="submit" class="w-full bg-purple-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-purple-700">Add to Slider</button>
             </form>
         </div>
     </div>
 
     <!-- Director Modal -->
     <div id="dirModal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative border-t-4 border-blue-500">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative border-t-4 border-teal-500">
             <button onclick="closeModal('dirModal')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-times"></i></button>
-            <h3 class="text-xl font-black text-slate-800 mb-6"><i class="fa-solid fa-user-tie text-blue-500 mr-2"></i> Add Director</h3>
+            <h3 class="text-xl font-black text-slate-800 mb-6">Add Director</h3>
             <form onsubmit="saveDirector(event)" class="space-y-4">
-                <div>
-                    <label class="text-xs font-black text-slate-700 uppercase mb-1 block">Full Name</label>
-                    <input type="text" id="dName" class="w-full border border-slate-300 rounded-lg p-2 focus:border-blue-500 focus:outline-none bg-slate-50" required>
-                </div>
-                <div>
-                    <label class="text-xs font-black text-slate-700 uppercase mb-1 block">Role / Designation</label>
-                    <input type="text" id="dRole" class="w-full border border-slate-300 rounded-lg p-2 focus:border-blue-500 focus:outline-none bg-slate-50" required>
-                </div>
-                <div>
-                    <label class="text-xs font-black text-slate-700 uppercase mb-1 block">Profile Picture</label>
-                    <input type="file" accept="image/*" onchange="convertImage(this, 'dImgB64')" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer" required>
-                    <input type="hidden" id="dImgB64">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl hover:bg-blue-700 transition shadow-lg mt-2">Save Director</button>
+                <input type="text" id="dName" placeholder="Full Name" class="w-full border p-2 rounded bg-slate-50 outline-none" required>
+                <input type="text" id="dRole" placeholder="Role/Title" class="w-full border p-2 rounded bg-slate-50 outline-none" required>
+                <input type="file" accept="image/*" onchange="convertImage(this, 'dImgB64', null)" class="w-full text-xs border p-2" required>
+                <input type="hidden" id="dImgB64">
+                <button type="submit" class="w-full bg-teal-600 text-white font-black py-3 rounded-xl shadow-lg hover:bg-teal-700">Save Director</button>
             </form>
         </div>
     </div>
@@ -276,18 +288,30 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => { el.classList.remove('active-btn'); el.style.backgroundColor = ''; });
-            
             document.getElementById(tabId).classList.add('active');
-            
-            // UI title mapping
-            const titles = { 'ordersTab': 'Live Orders (WhatsApp Gateway)', 'productsTab': 'Inventory Management', 'adsTab': 'Banner Advertisements', 'settingsTab': 'Website Configuration', 'directorsTab': 'Board of Directors' };
+            const titles = { 'ordersTab': 'Live Orders', 'productsTab': 'Inventory', 'adsTab': 'Banners', 'settingsTab': 'Web Settings', 'directorsTab': 'Directors', 'catsTab': 'Categories', 'reportsTab':'POS & Reports' };
             document.getElementById('topTitle').innerText = titles[tabId];
         }
-
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-        // Utility: File to Base64 (Resize to prevent localstorage quota errors)
-        function convertImage(input, hiddenId) {
+        // Core Admin Init
+        document.addEventListener("DOMContentLoaded", () => {
+            initCatsData();
+            loadProducts();
+            loadAds();
+            loadSettings();
+            loadDirectors();
+            renderCategoriesTab();
+            populateReportCategories();
+            loadSavedSound();
+            
+            lastOrderCount = (JSON.parse(localStorage.getItem('jsuper_orders')) || []).length;
+            renderOrders();
+            setInterval(pollOrders, 2000);
+        });
+
+        // Image compression helper
+        function convertImage(input, hiddenId, previewId) {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -296,24 +320,13 @@
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        // Max width 800px to save storage
-                        const MAX_WIDTH = 800;
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const b64 = canvas.toDataURL('image/jpeg', 0.8); // Compress
+                        const MAX = 600; let w = img.width; let h = img.height;
+                        if (w > MAX) { h *= MAX / w; w = MAX; }
+                        canvas.width = w; canvas.height = h;
+                        ctx.drawImage(img, 0, 0, w, h);
+                        const b64 = canvas.toDataURL('image/jpeg', 0.8);
                         document.getElementById(hiddenId).value = b64;
-                        
-                        // Preview logic if product
-                        if(hiddenId === 'pImgB64') {
-                            document.getElementById('pImgPreviewBox').innerHTML = `<img src="${b64}" class="w-full h-full object-cover">`;
-                        }
+                        if(previewId) document.getElementById(previewId).innerHTML = `<img src="${b64}" class="w-full h-full object-cover">`;
                     };
                     img.src = e.target.result;
                 };
@@ -321,346 +334,345 @@
             }
         }
 
-        // ================= INVENTORY LOGIC =================
+        // ================= CATEGORIES =================
+        function initCatsData() {
+            const defaultCats = [
+                { name: 'Vegetables', active: true, subcats: ['Leafy Greens', 'Root Vegetables'] },
+                { name: 'Fruits', active: true, subcats: [] },
+                { name: 'Meat', active: true, subcats: [] },
+                { name: 'Seafood', active: true, subcats: [] },
+                { name: 'Beverages', active: true, subcats: [] }
+            ];
+            let c = JSON.parse(localStorage.getItem('jsuper_cats'));
+            if(!c || c.length===0) localStorage.setItem('jsuper_cats', JSON.stringify(defaultCats));
+        }
+
+        function renderCategoriesTab() {
+            let cats = JSON.parse(localStorage.getItem('jsuper_cats')) || [];
+            let html = '';
+            cats.forEach((c, idx) => {
+                let subHtml = (c.subcats||[]).map(s => `<span class="bg-slate-200 text-slate-700 px-2 py-1 rounded text-[10px] m-1 inline-flex items-center gap-1">${s} <button onclick="delSubcat(${idx}, '${s}')" class="text-red-500"><i class="fa-solid fa-times"></i></button></span>`).join('');
+                html += `
+                    <div class="border p-4 rounded-xl flex justify-between items-center bg-slate-50 mb-3">
+                        <div>
+                            <h4 class="font-black text-sm">${c.name} ${c.active===false ? '<span class="text-red-500 text-[10px]">Inactive</span>' : '<span class="text-green-500 text-[10px]">Active</span>'}</h4>
+                            <div class="mt-1">${subHtml}</div>
+                        </div>
+                        <div class="flex flex-col gap-1 md:flex-row">
+                            <button onclick="toggleCat(${idx})" class="text-[10px] px-2 py-1 border rounded font-bold bg-white hover:bg-slate-100">Toggle Status</button>
+                            <button onclick="addSubcat(${idx})" class="text-[10px] px-2 py-1 border rounded font-bold bg-blue-50 text-blue-700 hover:bg-blue-100">+ Subcat</button>
+                            <button onclick="delCat(${idx})" class="text-[10px] px-2 py-1 border rounded font-bold bg-red-50 text-red-600"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('adminCatList').innerHTML = html;
+        }
+
+        function addCategory() {
+            let n = prompt("Category Name:");
+            if(n) {
+                let cats = JSON.parse(localStorage.getItem('jsuper_cats')) || [];
+                cats.push({name:n, active:true, subcats:[]});
+                localStorage.setItem('jsuper_cats', JSON.stringify(cats)); renderCategoriesTab();
+            }
+        }
+        function delCat(idx) {
+            if(confirm("Delete category?")) {
+                let cats = JSON.parse(localStorage.getItem('jsuper_cats')); cats.splice(idx, 1);
+                localStorage.setItem('jsuper_cats', JSON.stringify(cats)); renderCategoriesTab();
+            }
+        }
+        function toggleCat(idx) {
+            let cats = JSON.parse(localStorage.getItem('jsuper_cats')); cats[idx].active = cats[idx].active === false ? true : false;
+            localStorage.setItem('jsuper_cats', JSON.stringify(cats)); renderCategoriesTab();
+        }
+        function addSubcat(idx) {
+            let n = prompt("Sub-category Name:");
+            if(n) {
+                let cats = JSON.parse(localStorage.getItem('jsuper_cats'));
+                if(!cats[idx].subcats) cats[idx].subcats = [];
+                cats[idx].subcats.push(n);
+                localStorage.setItem('jsuper_cats', JSON.stringify(cats)); renderCategoriesTab();
+            }
+        }
+        function delSubcat(idx, s) {
+            let cats = JSON.parse(localStorage.getItem('jsuper_cats'));
+            cats[idx].subcats = cats[idx].subcats.filter(x => x !== s);
+            localStorage.setItem('jsuper_cats', JSON.stringify(cats)); renderCategoriesTab();
+        }
+        function updateSubcatDropdown() {
+            let cats = JSON.parse(localStorage.getItem('jsuper_cats')) || [];
+            let catName = document.getElementById('pCat').value;
+            let c = cats.find(x => x.name === catName);
+            let sub = document.getElementById('pSubcat');
+            if(c && c.subcats && c.subcats.length > 0) {
+                sub.innerHTML = '<option value="">No Subcategory</option>' + c.subcats.map(s => `<option value="${s}">${s}</option>`).join('');
+                sub.classList.remove('hidden');
+            } else {
+                sub.innerHTML = '<option value="">No Subcategory</option>';
+                sub.classList.add('hidden');
+            }
+        }
+
+        // ================= INVENTORY =================
         function loadProducts() {
             const prods = JSON.parse(localStorage.getItem('jsuper_products')) || [];
             document.getElementById('prodCount').innerText = prods.length;
             const tbody = document.getElementById('adminProductTable');
             tbody.innerHTML = '';
-            
-            prods.reverse().forEach(p => {
-                const img = p.img || 'https://via.placeholder.com/50';
+            prods.forEach(p => {
+                let discInfo = p.discType!=='none' && p.discVal>0 ? `<br><span class="text-red-500 text-[10px]">Disc: ${p.discVal}${p.discType==='percent'?'%':'Rs'}</span>` : '';
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0">
-                        <td class="p-4"><img src="${img}" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shadow-sm"></td>
-                        <td class="p-4">
-                            <div class="font-black text-slate-800">${p.name}</div>
-                            <div class="text-[10px] text-slate-500 w-48 truncate">${p.desc}</div>
-                        </td>
-                        <td class="p-4"><span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">${p.category}</span></td>
-                        <td class="p-4 font-bold text-xs text-slate-600">${p.isWeight === 'true' ? 'Kg/g' : 'Unit'}</td>
-                        <td class="p-4 font-black text-green-700 text-base">Rs. ${parseFloat(p.price).toFixed(2)}</td>
+                    <tr class="border-b">
+                        <td class="p-4"><img src="${p.img||''}" class="w-10 h-10 object-cover rounded"></td>
+                        <td class="p-4"><div class="font-bold text-sm">${p.name}</div><div class="text-[10px] text-slate-500 w-32 truncate">${p.desc}</div></td>
+                        <td class="p-4 text-xs"><span class="bg-slate-100 px-2 py-1 rounded">${p.category}</span><br><span class="text-[9px]">${p.subcategory||''}</span></td>
+                        <td class="p-4 text-xs">${p.isWeight==='true'?'Kg/g':'Unit'}</td>
+                        <td class="p-4 font-bold text-green-700">Rs. ${parseFloat(p.price).toFixed(2)}${discInfo}</td>
                         <td class="p-4 text-right">
-                            <button onclick="delProduct(${p.id})" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="openProductModal(${p.id})" class="text-blue-500 hover:bg-blue-50 p-2 rounded mr-1"><i class="fa-solid fa-edit"></i></button>
+                            <button onclick="delProduct(${p.id})" class="text-red-500 hover:bg-red-50 p-2 rounded"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
             });
         }
+        
+        function openProductModal(id = null) {
+            let cats = JSON.parse(localStorage.getItem('jsuper_cats')) || [];
+            document.getElementById('pCat').innerHTML = cats.filter(c=>c.active!==false).map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+            
+            if(id) {
+                let list = JSON.parse(localStorage.getItem('jsuper_products')) || [];
+                let p = list.find(x => String(x.id) === String(id));
+                if(p) {
+                    document.getElementById('pId').value = p.id;
+                    document.getElementById('pName').value = p.name;
+                    document.getElementById('pWeight').value = p.isWeight;
+                    document.getElementById('pCat').value = p.category;
+                    updateSubcatDropdown();
+                    document.getElementById('pSubcat').value = p.subcategory || '';
+                    document.getElementById('pPrice').value = p.price;
+                    document.getElementById('pDiscType').value = p.discType || 'none';
+                    document.getElementById('pDiscVal').value = p.discVal || 0;
+                    document.getElementById('pDesc').value = p.desc;
+                    document.getElementById('pImgB64').value = p.img || '';
+                    document.getElementById('pImgPreviewBox').innerHTML = p.img ? `<img src="${p.img}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-image text-slate-300"></i>';
+                }
+            } else {
+                document.getElementById('pId').value = '';
+                document.getElementById('pName').value = '';
+                document.getElementById('pPrice').value = '';
+                document.getElementById('pDesc').value = '';
+                document.getElementById('pDiscVal').value = '0';
+                document.getElementById('pImgB64').value = '';
+                document.getElementById('pImgPreviewBox').innerHTML = '<i class="fa-solid fa-image text-slate-300"></i>';
+                updateSubcatDropdown();
+            }
+            document.getElementById('productModal').classList.remove('hidden');
+        }
 
         function saveProduct(e) {
             e.preventDefault();
             let list = JSON.parse(localStorage.getItem('jsuper_products')) || [];
-            const imgVal = document.getElementById('pImgB64').value;
-            if(!imgVal) { alert("Please wait for image to process or upload an image."); return; }
-
-            list.push({
-                id: Date.now(),
+            let id = document.getElementById('pId').value;
+            let obj = {
+                id: id ? parseInt(id) : Date.now(),
                 name: document.getElementById('pName').value,
                 category: document.getElementById('pCat').value,
+                subcategory: document.getElementById('pSubcat').value,
                 price: document.getElementById('pPrice').value,
                 isWeight: document.getElementById('pWeight').value,
                 desc: document.getElementById('pDesc').value,
-                img: imgVal
-            });
-            localStorage.setItem('jsuper_products', JSON.stringify(list));
+                discType: document.getElementById('pDiscType').value,
+                discVal: document.getElementById('pDiscVal').value,
+                img: document.getElementById('pImgB64').value
+            };
             
-            closeModal('productModal');
-            e.target.reset();
-            document.getElementById('pImgB64').value = '';
-            document.getElementById('pImgPreviewBox').innerHTML = '<i class="fa-solid fa-image text-slate-300 text-xl"></i>';
-            loadProducts();
-            alert("Product saved successfully!");
+            if(id) {
+                list = list.map(x => String(x.id) === String(id) ? obj : x);
+            } else {
+                list.unshift(obj);
+            }
+            localStorage.setItem('jsuper_products', JSON.stringify(list));
+            closeModal('productModal'); loadProducts();
         }
-
         function delProduct(id) {
-            if(confirm("Delete this product?")) {
+            if(confirm("Delete product?")) {
                 let list = JSON.parse(localStorage.getItem('jsuper_products'));
-                localStorage.setItem('jsuper_products', JSON.stringify(list.filter(p => p.id !== id)));
-                loadProducts();
+                localStorage.setItem('jsuper_products', JSON.stringify(list.filter(p => String(p.id) !== String(id)))); loadProducts();
             }
         }
 
-        // ================= ADS LOGIC =================
-        function loadAds() {
-            const adList = JSON.parse(localStorage.getItem('jsuper_ads')) || [];
-            const grid = document.getElementById('adsGrid');
-            grid.innerHTML = adList.map(a => `
-                <div class="relative rounded-2xl overflow-hidden shadow-md group border-2 border-slate-200">
-                    <img src="${a.img}" class="w-full h-32 object-cover">
-                    <button onclick="delAd(${a.id})" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            `).join('');
-        }
-
-        function saveAd(e) {
-            e.preventDefault();
-            let list = JSON.parse(localStorage.getItem('jsuper_ads')) || [];
-            list.push({ id: Date.now(), img: document.getElementById('adImgB64').value });
-            localStorage.setItem('jsuper_ads', JSON.stringify(list));
-            closeModal('adModal');
-            e.target.reset();
-            loadAds();
-        }
-
-        function delAd(id) {
-            let list = JSON.parse(localStorage.getItem('jsuper_ads'));
-            localStorage.setItem('jsuper_ads', JSON.stringify(list.filter(a => a.id !== id)));
-            loadAds();
-        }
-
-        // ================= SETTINGS LOGIC =================
+        // ================= SETTINGS =================
         function loadSettings() {
-            const s = JSON.parse(localStorage.getItem('jsuper_settings')) || { navLinks: 'J SUPER PRODUCTS, EXCLUSIVES', waAdmin: '94706717695', address: '', phones: '', socials: {} };
+            let s = JSON.parse(localStorage.getItem('jsuper_settings')) || {navLinks:'J SUPER PRODUCTS, EXCLUSIVES'};
             document.getElementById('setWaAdmin').value = s.waAdmin || '94706717695';
             document.getElementById('setNavLinks').value = s.navLinks || '';
-            document.getElementById('setAddress').value = (s.address || '').replace(/<br>/g, '\n');
-            document.getElementById('setPhones').value = (s.phones || '').replace(/<br>/g, '\n');
-            document.getElementById('setFb').value = s.socials.fb || '';
-            document.getElementById('setWa').value = s.socials.wa || '';
-            document.getElementById('setIg').value = s.socials.ig || '';
+            document.getElementById('setBank').value = s.bank || '';
+            document.getElementById('setPaypal').value = s.paypal || '';
+            document.getElementById('setCrypto').value = s.crypto || '';
+            document.getElementById('setAbout').value = s.about || '';
+            document.getElementById('setFaq').value = s.faq || '';
+            document.getElementById('setPrivacy').value = s.privacy || '';
+            document.getElementById('setTerms').value = s.terms || '';
+            document.getElementById('setDelivery').value = s.delivery || '';
+            document.getElementById('setAddress').value = s.address || '';
+            document.getElementById('setPhones').value = s.phones || '';
         }
-
         function saveWebSettings(e) {
             e.preventDefault();
-            const s = {
+            let s = {
                 waAdmin: document.getElementById('setWaAdmin').value,
                 navLinks: document.getElementById('setNavLinks').value,
-                address: document.getElementById('setAddress').value.replace(/\n/g, '<br>'),
-                phones: document.getElementById('setPhones').value.replace(/\n/g, '<br>'),
-                socials: { fb: document.getElementById('setFb').value, wa: document.getElementById('setWa').value, ig: document.getElementById('setIg').value }
+                bank: document.getElementById('setBank').value,
+                paypal: document.getElementById('setPaypal').value,
+                crypto: document.getElementById('setCrypto').value,
+                about: document.getElementById('setAbout').value,
+                faq: document.getElementById('setFaq').value,
+                privacy: document.getElementById('setPrivacy').value,
+                terms: document.getElementById('setTerms').value,
+                delivery: document.getElementById('setDelivery').value,
+                address: document.getElementById('setAddress').value,
+                phones: document.getElementById('setPhones').value
             };
             localStorage.setItem('jsuper_settings', JSON.stringify(s));
-            alert("Settings updated! View the frontend to see changes.");
+            alert("Settings Saved!");
         }
 
-        // ================= DIRECTORS LOGIC =================
-        function loadDirectors() {
-            const dirs = JSON.parse(localStorage.getItem('jsuper_directors')) || [];
-            const grid = document.getElementById('adminDirGrid');
-            grid.innerHTML = dirs.map(d => `
-                <div class="bg-white p-4 rounded-2xl text-center shadow-sm border border-slate-200 relative group">
-                    <img src="${d.img}" class="w-16 h-16 rounded-full mx-auto object-cover mb-2 border border-slate-300">
-                    <h5 class="font-black text-slate-800 text-sm uppercase">${d.name}</h5>
-                    <p class="text-[10px] text-blue-600 font-bold">${d.role}</p>
-                    <button onclick="delDir(${d.id})" class="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            `).join('');
-        }
-
-        function saveDirector(e) {
-            e.preventDefault();
-            let list = JSON.parse(localStorage.getItem('jsuper_directors')) || [];
-            list.push({ id: Date.now(), name: document.getElementById('dName').value, role: document.getElementById('dRole').value, img: document.getElementById('dImgB64').value });
-            localStorage.setItem('jsuper_directors', JSON.stringify(list));
-            closeModal('dirModal');
-            e.target.reset();
-            loadDirectors();
-        }
-        
-        function delDir(id) {
-            let list = JSON.parse(localStorage.getItem('jsuper_directors'));
-            localStorage.setItem('jsuper_directors', JSON.stringify(list.filter(d => d.id !== id)));
-            loadDirectors();
-        }
-
-        // ================= REAL-TIME ORDERS ENGINE =================
-        let lastOrderCount = 0;
+        // ================= LIVE ORDERS & SOUND =================
         let orderAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg'); 
         let audioContextEnabled = false;
+        let lastOrderCount = 0;
 
         function enableAudioContext() {
             orderAudio.play().then(() => {
-                orderAudio.pause();
-                orderAudio.currentTime = 0;
-                audioContextEnabled = true;
+                orderAudio.pause(); orderAudio.currentTime = 0; audioContextEnabled = true;
                 document.getElementById('enableSoundBtn').className = "bg-green-100 text-green-700 px-4 py-2 rounded-lg text-xs font-bold border border-green-200";
-                document.getElementById('enableSoundBtn').innerHTML = '<i class="fa-solid fa-check mr-1"></i> Sound Enabled';
-            }).catch(e => console.log("Audio block", e));
+                document.getElementById('enableSoundBtn').innerHTML = '<i class="fa-solid fa-check mr-1"></i> Sound ON';
+            }).catch(e => console.log(e));
         }
-
         function changeNotifSound(input) {
             const file = input.files[0];
             if(file) {
                 const reader = new FileReader();
-                reader.onload = e => {
-                    localStorage.setItem('jsuper_sound', e.target.result);
-                    orderAudio = new Audio(e.target.result);
-                    alert("Notification sound updated!");
-                };
+                reader.onload = e => { localStorage.setItem('jsuper_sound', e.target.result); orderAudio = new Audio(e.target.result); alert("Sound Updated"); };
                 reader.readAsDataURL(file);
             }
         }
-
         function loadSavedSound() {
-            const saved = localStorage.getItem('jsuper_sound');
-            if(saved) orderAudio = new Audio(saved);
+            const saved = localStorage.getItem('jsuper_sound'); if(saved) orderAudio = new Audio(saved);
         }
 
         function renderOrders() {
             const orders = JSON.parse(localStorage.getItem('jsuper_orders')) || [];
-            const container = document.getElementById('ordersContainer');
             document.getElementById('orderBadge').innerText = orders.length;
+            if(orders.length > 0) document.getElementById('orderBadge').classList.remove('hidden'); else document.getElementById('orderBadge').classList.add('hidden');
             
-            if(orders.length > 0) document.getElementById('orderBadge').classList.remove('hidden');
-            else document.getElementById('orderBadge').classList.add('hidden');
+            const container = document.getElementById('ordersContainer');
+            if(orders.length === 0) { container.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold">No orders yet.</div>'; return; }
 
-            if(orders.length === 0) {
-                container.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold"><i class="fa-solid fa-box-open text-4xl mb-3 block text-slate-200"></i> No orders received yet.</div>';
-                return;
-            }
-
-            container.innerHTML = orders.map(o => `
-                <div class="p-4 hover:bg-slate-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="bg-green-600 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">${o.id}</span>
-                            <span class="text-[10px] text-slate-400 font-medium"><i class="fa-regular fa-clock"></i> ${o.date}</span>
+            container.innerHTML = orders.map(o => {
+                let itemsHtml = o.items.map(i => `<div class="text-[10px] text-slate-600 truncate border-b border-slate-100 last:border-0 pb-1 mb-1">- ${i.name} (${i.qty})</div>`).join('');
+                let proofBtn = o.paymentProof ? `<a href="${o.paymentProof}" download="Proof_${o.id}" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded ml-2 font-bold"><i class="fa-solid fa-download"></i> Slip</a>` : '';
+                return `
+                <div class="p-4 hover:bg-slate-50 transition border-b flex flex-col md:flex-row justify-between gap-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="bg-green-600 text-white text-[10px] font-black px-2 py-0.5 rounded">${o.id}</span>
+                            <span class="text-[10px] text-slate-500">${o.date}</span>
+                            <span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-black uppercase">${o.paymentMethod}</span>
+                            ${proofBtn}
                         </div>
-                        <h4 class="font-black text-slate-800 text-sm"><i class="fa-solid fa-user text-slate-400 mr-1"></i> ${o.customer.name}</h4>
-                        <p class="text-xs text-slate-600 mt-1"><i class="fa-solid fa-phone text-slate-400 mr-1"></i> ${o.customer.phone} | <i class="fa-solid fa-location-dot text-slate-400 mr-1"></i> ${o.customer.address || 'Pickup'}</p>
+                        <h4 class="font-black text-sm"><i class="fa-solid fa-user text-slate-400 mr-2"></i>${o.customer.name}</h4>
+                        <p class="text-xs text-slate-600"><i class="fa-solid fa-phone text-slate-400 mr-2"></i>${o.customer.phone} | <i class="fa-solid fa-map-pin text-slate-400 mx-1"></i>${o.customer.address||'Pickup'}</p>
+                        <div class="bg-slate-100 p-2 rounded mt-2 max-h-24 overflow-y-auto">${itemsHtml}</div>
                     </div>
-                    <div class="text-right">
-                        <div class="text-[10px] text-slate-500 mb-1">${o.items.length} items</div>
-                        <div class="font-black text-green-700 text-lg">Rs. ${o.total.toFixed(2)}</div>
-                        <button onclick="viewOrderDetails('${o.id}')" class="text-[10px] text-blue-600 font-bold hover:underline">View Items</button>
+                    <div class="text-right flex flex-col justify-between">
+                        <div>
+                            <select onchange="updateOrderStatus('${o.id}', this.value)" class="text-xs font-black p-1 border rounded focus:outline-none focus:border-green-500 mb-2">
+                                <option value="Pending" ${o.status==='Pending'?'selected':''}>Pending</option>
+                                <option value="Processing" ${o.status==='Processing'?'selected':''}>Processing</option>
+                                <option value="Shipped" ${o.status==='Shipped'?'selected':''}>Shipped</option>
+                                <option value="Delivered" ${o.status==='Delivered'?'selected':''}>Delivered</option>
+                                <option value="Cancelled" ${o.status==='Cancelled'?'selected':''}>Cancelled</option>
+                            </select>
+                            <div class="font-black text-green-700 text-lg">Rs. ${parseFloat(o.total).toFixed(2)}</div>
+                        </div>
+                        <button onclick="delOrder('${o.id}')" class="text-red-500 text-[10px] hover:underline mt-2">Delete</button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
-
+        function updateOrderStatus(id, status) {
+            let orders = JSON.parse(localStorage.getItem('jsuper_orders')) || [];
+            orders = orders.map(o => { if(o.id.toString() === id.toString()) o.status = status; return o; });
+            localStorage.setItem('jsuper_orders', JSON.stringify(orders));
+        }
+        function delOrder(id) {
+            if(confirm("Delete this order?")) {
+                let orders = JSON.parse(localStorage.getItem('jsuper_orders'));
+                localStorage.setItem('jsuper_orders', JSON.stringify(orders.filter(o => o.id.toString() !== id.toString()))); renderOrders();
+            }
+        }
         function clearOrders() {
-            if(confirm("Clear all order history? This cannot be undone.")) {
-                localStorage.setItem('jsuper_orders', '[]');
-                lastOrderCount = 0;
-                renderOrders();
-            }
+            if(confirm("Clear all orders?")) { localStorage.setItem('jsuper_orders', '[]'); lastOrderCount = 0; renderOrders(); }
         }
-
-        function viewOrderDetails(id) {
-            const orders = JSON.parse(localStorage.getItem('jsuper_orders')) || [];
-            const o = orders.find(x => x.id === id);
-            if(o) {
-                let text = "Items ordered:\n";
-                o.items.forEach(i => text += `- ${i.name} (${i.qty})\n`);
-                alert(text);
-            }
-        }
-
-        // The Polling Engine to detect new orders
         function pollOrders() {
             const orders = JSON.parse(localStorage.getItem('jsuper_orders')) || [];
             if(orders.length > lastOrderCount) {
-                // New Order Received!
                 if(lastOrderCount !== 0 && audioContextEnabled) {
-                    orderAudio.play().catch(e=>console.log(e));
-                    // Blink effect on badge
-                    const badge = document.getElementById('orderBadge');
-                    badge.classList.add('blink-me');
-                    setTimeout(() => badge.classList.remove('blink-me'), 5000);
+                    orderAudio.play().catch(e=>{});
+                    const badge = document.getElementById('orderBadge'); badge.classList.add('blink-me'); setTimeout(() => badge.classList.remove('blink-me'), 5000);
                 }
-                lastOrderCount = orders.length;
-                renderOrders();
-            } else if (orders.length < lastOrderCount) {
-                // Orders were deleted
-                lastOrderCount = orders.length;
-                renderOrders();
-            }
+                lastOrderCount = orders.length; renderOrders();
+            } else if (orders.length < lastOrderCount) { lastOrderCount = orders.length; renderOrders(); }
         }
 
-        // Init App
-        document.addEventListener("DOMContentLoaded", () => {
-            loadProducts();
-            loadAds();
-            loadSettings();
-            loadDirectors();
-            loadSavedSound();
-            
-            // Set initial order count so it doesn't ring on refresh
+        // ================= REPORTS =================
+        function generateSalesReport() {
+            const start = document.getElementById('repStart').value;
+            const end = document.getElementById('repEnd').value;
             const orders = JSON.parse(localStorage.getItem('jsuper_orders')) || [];
-            lastOrderCount = orders.length;
-            renderOrders();
+            let filtered = orders;
+            if(start && end) {
+                const sDate = new Date(start); const eDate = new Date(end); eDate.setHours(23, 59, 59);
+                filtered = orders.filter(o => { const od = new Date(o.date); return od >= sDate && od <= eDate; });
+            }
+            let totalSales = filtered.filter(o => o.status !== 'Cancelled').reduce((sum, o) => sum + o.total, 0);
+            document.getElementById('salesReportResult').innerHTML = `<div class="text-center"><p class="text-xs text-slate-500 font-bold uppercase mb-1">Total Sales</p><h2 class="text-3xl font-black text-green-700 mb-2">Rs. ${totalSales.toFixed(2)}</h2><p class="text-sm font-bold text-slate-700">Valid Orders: ${filtered.filter(o=>o.status!=='Cancelled').length}</p></div>`;
+        }
+        function populateReportCategories() {
+            let cats = JSON.parse(localStorage.getItem('jsuper_cats')) || [];
+            document.getElementById('repInvCat').innerHTML = '<option value="all">All Categories</option>' + cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        }
+        function generateInventoryReport() {
+            const cat = document.getElementById('repInvCat').value;
+            const inv = JSON.parse(localStorage.getItem('jsuper_products')) || [];
+            let filtered = cat === 'all' ? inv : inv.filter(i => i.category === cat);
+            let html = '<table class="w-full text-left text-xs"><tr class="border-b"><th class="pb-2">Item</th><th class="pb-2 text-right">Price</th></tr>';
+            filtered.forEach(i => { html += `<tr class="border-b border-slate-100 last:border-0"><td class="py-2">${i.name}</td><td class="py-2 text-right text-green-700 font-bold">Rs. ${parseFloat(i.price).toFixed(2)}</td></tr>`; });
+            html += '</table>';
+            document.getElementById('invReportResult').innerHTML = html;
+        }
 
-            // Start polling localstorage every 2 seconds
-            setInterval(pollOrders, 2000);
-        });
+        // ================= ADS & DIRECTORS (Simplified) =================
+        function loadAds() {
+            const ads = JSON.parse(localStorage.getItem('jsuper_ads')) || [];
+            document.getElementById('adsGrid').innerHTML = ads.map(a => `<div class="relative rounded-xl overflow-hidden shadow border"><img src="${a.img}" class="w-full h-32 object-cover"><button onclick="delAd(${a.id})" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full shadow-lg"><i class="fa-solid fa-trash"></i></button></div>`).join('');
+        }
+        function saveAd(e) { e.preventDefault(); let list = JSON.parse(localStorage.getItem('jsuper_ads')) || []; list.push({ id: Date.now(), img: document.getElementById('adImgB64').value }); localStorage.setItem('jsuper_ads', JSON.stringify(list)); closeModal('adModal'); loadAds(); }
+        function delAd(id) { let list = JSON.parse(localStorage.getItem('jsuper_ads')); localStorage.setItem('jsuper_ads', JSON.stringify(list.filter(a => a.id !== id))); loadAds(); }
+
+        function loadDirectors() {
+            const dirs = JSON.parse(localStorage.getItem('jsuper_directors')) || [];
+            document.getElementById('adminDirGrid').innerHTML = dirs.map(d => `<div class="bg-white p-4 rounded-xl text-center shadow-sm border relative"><img src="${d.img}" class="w-16 h-16 rounded-full mx-auto object-cover mb-2 border"><h5 class="font-black text-sm">${d.name}</h5><p class="text-[10px] text-teal-600 font-bold">${d.role}</p><button onclick="delDir(${d.id})" class="absolute top-2 right-2 text-red-500"><i class="fa-solid fa-trash"></i></button></div>`).join('');
+        }
+        function saveDirector(e) { e.preventDefault(); let list = JSON.parse(localStorage.getItem('jsuper_directors')) || []; list.push({ id: Date.now(), name: document.getElementById('dName').value, role: document.getElementById('dRole').value, img: document.getElementById('dImgB64').value }); localStorage.setItem('jsuper_directors', JSON.stringify(list)); closeModal('dirModal'); loadDirectors(); }
+        function delDir(id) { let list = JSON.parse(localStorage.getItem('jsuper_directors')); localStorage.setItem('jsuper_directors', JSON.stringify(list.filter(d => d.id !== id))); loadDirectors(); }
 
     </script>
-
-    <!-- Ad Modal -->
-    <div id="adModal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
-            <h3 class="font-black text-green-900 uppercase tracking-widest border-b pb-3 mb-4">Add Banner</h3>
-            <input type="file" onchange="convertImage(this, 'adImgB64')" class="w-full mb-3 text-xs">
-            <input type="hidden" id="adImgB64">
-            <div class="flex gap-3">
-                <button onclick="document.getElementById('adModal').classList.add('hidden')" class="flex-1 bg-slate-200 py-3 rounded-xl text-xs font-bold">Cancel</button>
-                <button onclick="saveAd()" class="flex-1 text-white py-3 rounded-xl text-xs font-bold" style="background-color: #008140;">Save</button>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        function encodeSound(input) {
-            const file = input.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = e => document.getElementById('setSoundB64').value = e.target.result;
-                reader.readAsDataURL(file);
-            }
-        }
-        function testSound() {
-            const b64 = document.getElementById('setSoundB64').value;
-            if(b64) new Audio(b64).play();
-            else alert("No sound loaded.");
-        }
-        
-        function renderAds() {
-            const ads = JSON.parse(localStorage.getItem('grocery_ads')) || [];
-            const grid = document.getElementById('adminAdsGrid');
-            grid.innerHTML = ads.map(a => `<div class="bg-white p-2 rounded-xl shadow-sm border relative"><img src="${a.img}" class="w-full h-24 object-cover rounded-lg"><button onclick="delAd(${a.id})" class="absolute top-4 right-4 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button></div>`).join('');
-        }
-        function openAdModal() { document.getElementById('adImgB64').value=''; document.getElementById('adModal').classList.remove('hidden'); }
-        function saveAd() {
-            let list = JSON.parse(localStorage.getItem('grocery_ads')) || [];
-            list.push({ id: Date.now(), img: document.getElementById('adImgB64').value });
-            localStorage.setItem('grocery_ads', JSON.stringify(list));
-            document.getElementById('adModal').classList.add('hidden');
-            renderAds();
-        }
-        function delAd(id) {
-            let list = JSON.parse(localStorage.getItem('grocery_ads'));
-            localStorage.setItem('grocery_ads', JSON.stringify(list.filter(x => x.id !== id)));
-            renderAds();
-        }
-        
-        // Initial setup hook
-        const originalInitAdmin = initAdmin;
-        initAdmin = function() {
-            originalInitAdmin();
-            renderAds();
-            // Attach custom sound
-            const set = JSON.parse(localStorage.getItem('grocery_settings')) || {};
-            if(set.sound) {
-                window.customAlarmAudio = new Audio(set.sound);
-            }
-        }
-        
-        // Intercept play alarm
-        const origPoll = pollOrders;
-        pollOrders = function() {
-            const arr = JSON.parse(localStorage.getItem('grocery_orders')) || [];
-            if(arr.length > orderCountCache && orderCountCache !== 0) {
-                if(window.customAlarmAudio) {
-                    window.customAlarmAudio.play().catch(e=>{});
-                } else {
-                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc = ctx.createOscillator(); osc.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.5);
-                }
-            }
-            origPoll();
-        }
-    </script>
-
 </body>
 </html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J SUPER.LK - Online Grocery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        /* Modal transitions */
+        .modal-active { display: flex !important; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Top Utility Bar -->
+    <div class="bg-slate-900 text-white text-xs py-2 px-4 z-50 relative border-b border-slate-700">
+        <div class="max-w-7xl mx-auto w-full flex flex-wrap justify-between items-center gap-2">
+            <div class="flex space-x-4 md:space-x-6 font-semibold uppercase tracking-wider overflow-x-auto hide-scroll" id="topDynamicNav">
+                <a href="#" class="hover:text-green-400 transition whitespace-nowrap">DELIVERY TYPE</a>
+                <a href="#" class="text-green-400 font-bold transition whitespace-nowrap" onclick="showAllCategories()">CATEGORIES</a>
+                <a href="#" class="hover:text-green-400 transition whitespace-nowrap">RE-ORDER</a>
+                <a href="#" class="hover:text-green-400 transition whitespace-nowrap">Track my order</a>
+            </div>
+            <div class="flex space-x-4 md:space-x-6 font-semibold uppercase tracking-wider ml-auto">
+                <a href="#" onclick="openAuthModal()" id="authLink" class="hover:text-green-400 transition flex items-center gap-1"><i class="fa-solid fa-user"></i> Sign In / Account</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header & Search -->
+    
+    <!-- Top Utility Bar -->
+    <div class="bg-green-950 text-white text-[10px] md:text-xs py-2 px-4 z-50 relative border-b border-green-800 w-full" id="dynamicTopNavSection">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+            <div class="flex space-x-4 font-bold uppercase tracking-widest overflow-x-auto custom-scrollbar" id="topNavLinksGroup">
+                <a href="#" class="hover:text-green-400 transition whitespace-nowrap">DELIVERY TYPE</a>
+                <a href="#" class="text-green-400 transition whitespace-nowrap">CATEGORIES</a>
+            </div>
+        </div>
+    </div>
+
+    <header class="bg-green-600 shadow-md sticky top-0 z-40 border-b-4 border-orange-500">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- Logo -->
+            <a href="index.html" class="flex-shrink-0 bg-white p-2 rounded-xl shadow-lg border border-green-700">
+                <img src="logo.png" alt="J SUPER.LK" class="h-16 md:h-20 object-contain" onerror="this.src='https://via.placeholder.com/150x60?text=J+SUPER.LK'">
+            </a>
+            
+            <!-- Search Bar -->
+            <div class="w-full md:w-1/2 flex relative shadow-lg rounded-full overflow-hidden border-2 border-green-500 focus-within:border-white transition-colors bg-white">
+                <input type="text" id="searchInput" placeholder="Search for groceries, vegetables, fruits..." class="w-full py-3 px-6 focus:outline-none text-sm text-slate-800" onkeyup="searchProducts()">
+                <button class="bg-slate-900 text-white px-6 hover:bg-slate-800 transition font-bold"><i class="fa-solid fa-search"></i></button>
+            </div>
+
+            <!-- Cart Button -->
+            
+            <button onclick="document.getElementById('trackModal').classList.remove('hidden')" class="bg-slate-100 text-green-900 px-4 py-2 md:py-3 rounded-xl font-black shadow-md hover:scale-105 transition flex items-center gap-2 text-xs">
+                <i class="fa-solid fa-map-location-dot"></i> <span class="hidden md:inline">Track Order</span>
+            </button>
+
+            <button onclick="toggleCart()" class="bg-slate-900 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:bg-slate-800 transition flex items-center gap-2 flex-shrink-0">
+                <i class="fa-solid fa-cart-shopping"></i> CART <span id="cartCountBadge" class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full ml-1">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+        
+        <!-- Ads / Banners Section -->
+        <div id="adsSection" class="mb-10 w-full h-48 md:h-80 bg-slate-200 rounded-2xl overflow-hidden relative shadow-lg flex items-center justify-center">
+            <div class="absolute inset-0 flex transition-transform duration-500 ease-in-out" id="adsTrack"></div>
+            <p class="text-slate-400 font-bold" id="noAdsText">Welcome to J SUPER.LK</p>
+        </div>
+
+        <!-- Categories Row (Icons/Buttons) -->
+        <div class="mb-10">
+            <h2 class="text-xl font-black text-slate-800 mb-4 border-l-4 border-orange-500 pl-3">Shop by Category</h2>
+            <div class="flex overflow-x-auto gap-4 pb-4 custom-scrollbar" id="categoryRow">
+                <!-- Categories injected here -->
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div class="flex justify-between items-end mb-6 border-b border-slate-200 pb-2">
+            <h2 class="text-2xl font-black text-slate-800 border-l-4 border-green-500 pl-3" id="productSectionTitle">Featured Products</h2>
+            <button onclick="showAllProducts()" class="text-green-600 font-bold text-sm hover:underline" id="viewAllBtn">View All</button>
+        </div>
+        
+        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            <!-- Products injected via JS -->
+        </div>
+        
+        <div id="noProductsMsg" class="hidden text-center text-slate-500 py-10 w-full col-span-full">
+            No products found matching your criteria.
+        </div>
+    </main>
+
+    <!-- Cart Drawer -->
+    <div id="cartDrawer" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
+            <h3 class="font-black text-lg"><i class="fa-solid fa-cart-shopping text-green-400 mr-2"></i> Your Cart</h3>
+            
+            <button onclick="document.getElementById('trackModal').classList.remove('hidden')" class="bg-slate-100 text-green-900 px-4 py-2 md:py-3 rounded-xl font-black shadow-md hover:scale-105 transition flex items-center gap-2 text-xs">
+                <i class="fa-solid fa-map-location-dot"></i> <span class="hidden md:inline">Track Order</span>
+            </button>
+
+            <button onclick="toggleCart()" class="text-slate-300 hover:text-white text-xl"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 custom-scrollbar" id="cartItemsList">
+            <!-- Cart Items -->
+        </div>
+        <div class="p-4 border-t border-slate-200 bg-slate-50">
+            <div class="flex justify-between items-center mb-4 text-lg font-black text-slate-800">
+                <span>Total:</span>
+                <span class="text-green-700" id="cartTotal">Rs. 0.00</span>
+            </div>
+            <button onclick="proceedToCheckout()" class="w-full bg-orange-500 text-white font-black py-3 rounded-xl hover:bg-orange-600 transition shadow-md uppercase tracking-wider">Proceed to Checkout</button>
+        </div>
+    </div>
+    <!-- Cart Overlay -->
+    <div id="cartOverlay" onclick="toggleCart()" class="fixed inset-0 bg-slate-900/50 z-40 hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!-- Auth / Checkout Modal -->
+    <div id="authModal" class="fixed inset-0 bg-slate-900/70 z-[60] hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 text-xl"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-2xl font-black text-slate-800 mb-2" id="authTitle">Customer Login</h3>
+            <p class="text-sm text-slate-500 mb-6" id="authSubtitle">Please enter your details to continue.</p>
+            
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-600 uppercase mb-1 block">Full Name</label>
+                    <input type="text" id="custName" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-600 uppercase mb-1 block">WhatsApp / Phone Number</label>
+                    <input type="text" id="custPhone" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-600 uppercase mb-1 block">Delivery Address (Optional for pickup)</label>
+                    <textarea id="custAddress" rows="2" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none"></textarea>
+                </div>
+                <input type="hidden" id="isCheckoutAction" value="false">
+                <button type="submit" class="w-full bg-green-600 text-white font-black py-3 rounded-xl hover:bg-green-700 transition shadow-lg mt-4" id="authBtnText">Save & Continue</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-slate-900/70 z-[70] hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl text-center">
+            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fa-solid fa-check"></i></div>
+            <h3 class="text-xl font-black text-slate-800 mb-2">Order Placed!</h3>
+            <p class="text-sm text-slate-500 mb-6">Redirecting to WhatsApp to send your order details to J SUPER...</p>
+            <button onclick="document.getElementById('successModal').classList.remove('modal-active')" class="bg-slate-200 text-slate-700 font-bold py-2 px-6 rounded-lg">Close</button>
+        </div>
+    </div>
+
+    <!-- Dynamic Footer -->
+    <footer class="bg-slate-900 text-slate-300 pt-12 pb-6 border-t-4 border-orange-500 text-sm mt-auto">
+        <!-- Directors Board -->
+        <div class="max-w-7xl mx-auto px-4 mb-10">
+            <h3 class="font-black text-white text-base uppercase tracking-widest text-center mb-6 border-b border-slate-700 pb-4"><i class="fa-solid fa-users mr-2 text-orange-500"></i> Board of Directors</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6" id="directorsGrid">
+                <!-- Directors JS -->
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8" id="footerColumns">
+            <!-- Footer details JS -->
+        </div>
+        <div class="max-w-7xl mx-auto px-4 pt-6 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p>&copy; <span id="year"></span> J SUPER.LK. All Rights Reserved.</p>
+            <div class="flex space-x-4 text-xl" id="socialLinksBox"></div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').innerText = new Date().getFullYear();
+
+        // Data Storage
+        let products = JSON.parse(localStorage.getItem('jsuper_products')) || [];
+        let ads = JSON.parse(localStorage.getItem('jsuper_ads')) || [];
+        let settings = JSON.parse(localStorage.getItem('jsuper_settings')) || { navLinks: 'J SUPER PRODUCTS, EXCLUSIVES, LOYALTY, COMMUNITY, HELP', waAdmin: '94706717695', address: 'MUDDUWA, RATNAPURA', phones: '0706717695', socials: {} };
+        let directors = JSON.parse(localStorage.getItem('jsuper_directors')) || [];
+        let cart = JSON.parse(localStorage.getItem('jsuper_cart')) || [];
+        let customer = JSON.parse(localStorage.getItem('jsuper_customer')) || null;
+
+        // Init
+        document.addEventListener("DOMContentLoaded", () => {
+            renderNav();
+            renderAds();
+            renderCategories();
+            renderProducts(products.slice(0, 8), 'Featured Products'); // Show only first 8 initially
+            renderFooter();
+            renderDirectors();
+            updateCartUI();
+            checkCustomerState();
+        });
+
+        // ================= UI RENDERING =================
+        function renderNav() {
+            const topNav = document.getElementById('topDynamicNav');
+            const links = settings.navLinks.split(',').map(l => l.trim()).filter(l => l);
+            let navHtml = `<a href="#" class="hover:text-orange-400 transition whitespace-nowrap">DELIVERY TYPE</a>`;
+            navHtml += `<a href="#" class="text-orange-400 font-black transition whitespace-nowrap" onclick="showAllCategories()">CATEGORIES</a>`;
+            links.forEach(l => {
+                navHtml += `<a href="#" class="hover:text-green-400 transition whitespace-nowrap">${l}</a>`;
+            });
+            topNav.innerHTML = navHtml;
+        }
+
+        function renderAds() {
+            const track = document.getElementById('adsTrack');
+            const noAds = document.getElementById('noAdsText');
+            if(ads.length === 0) {
+                track.innerHTML = '';
+                noAds.style.display = 'block';
+                return;
+            }
+            noAds.style.display = 'none';
+            track.innerHTML = ads.map(ad => `<img src="${ad.img}" class="w-full h-full object-cover flex-shrink-0" style="min-width: 100%;">`).join('');
+            
+            // Simple Carousel Animation
+            if(ads.length > 1) {
+                let idx = 0;
+                setInterval(() => {
+                    idx = (idx + 1) % ads.length;
+                    track.style.transform = `translateX(-${idx * 100}%)`;
+                }, 3000);
+            }
+        }
+
+        function renderCategories() {
+            const cats = [...new Set(products.map(p => p.category))];
+            const row = document.getElementById('categoryRow');
+            if(cats.length === 0) { row.innerHTML = '<span class="text-sm text-slate-400">No categories added yet.</span>'; return; }
+            
+            row.innerHTML = cats.map(c => `
+                <button onclick="filterCategory('${c}')" class="bg-white border border-slate-200 px-6 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-green-500 font-bold text-slate-700 whitespace-nowrap transition">
+                    ${c}
+                </button>
+            `).join('');
+        }
+
+        function renderProducts(list, title) {
+            document.getElementById('productSectionTitle').innerText = title;
+            const grid = document.getElementById('productGrid');
+            const noMsg = document.getElementById('noProductsMsg');
+            
+            if (list.length === 0) {
+                grid.innerHTML = '';
+                noMsg.classList.remove('hidden');
+                return;
+            }
+            noMsg.classList.add('hidden');
+
+            grid.innerHTML = list.map(p => {
+                const img = p.img || 'https://via.placeholder.com/300?text=No+Image';
+                const unitLabel = p.isWeight === 'true' ? '1 kg' : '1 Unit';
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col group h-full">
+                        <div class="relative w-full h-48 bg-white p-2">
+                            <img src="${img}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
+                            <span class="absolute top-2 left-2 bg-slate-900/80 backdrop-blur-sm text-white text-[10px] font-black px-2 py-1 rounded-md uppercase">${p.category}</span>
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow border-t border-slate-100">
+                            <h3 class="font-bold text-slate-800 text-sm leading-tight mb-1 line-clamp-2">${p.name}</h3>
+                            <p class="text-[10px] text-slate-500 mb-2 line-clamp-2">${p.desc}</p>
+                            <div class="mt-auto flex justify-between items-end">
+                                <div>
+                                    <span class="block text-[10px] text-slate-400 font-bold mb-0.5">${unitLabel}</span>
+                                    <span class="text-green-700 font-black text-base md:text-lg">Rs. ${parseFloat(p.price).toFixed(2)}</span>
+                                </div>
+                                <button onclick="addToCartEx(${p.id})" class="bg-orange-500 text-white w-9 h-9 rounded-full hover:bg-orange-600 hover:scale-110 transition flex items-center justify-center shadow-md"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderFooter() {
+            document.getElementById('footerColumns').innerHTML = `
+                <div>
+                    <h3 class="text-xl font-black text-white mb-4">J SUPER<span class="text-orange-500">.LK</span></h3>
+                    <p class="mb-2 text-slate-400 text-xs leading-relaxed"><i class="fa-solid fa-location-dot mr-2 text-orange-500"></i> ${settings.address}</p>
+                    <p class="mb-2 font-bold text-white text-xs"><i class="fa-solid fa-phone mr-2 text-orange-500"></i> ${settings.phones}</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Quick Links</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#" class="hover:text-green-400 transition">Home</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition">Catalogue & Deals</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition">Track my order</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Policies</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#" class="hover:text-green-400 transition">Privacy Notice</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition">Terms & Conditions</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition">Delivery Grid</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Support</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#" class="hover:text-green-400 transition">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition">FAQ</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition">About Us</a></li>
+                    </ul>
+                </div>
+            `;
+            document.getElementById('socialLinksBox').innerHTML = `
+                <a href="${settings.socials.fb||'#'}" class="hover:text-blue-500 transition"><i class="fa-brands fa-facebook"></i></a>
+                <a href="${settings.socials.wa||'#'}" class="hover:text-green-500 transition"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="${settings.socials.ig||'#'}" class="hover:text-pink-500 transition"><i class="fa-brands fa-instagram"></i></a>
+            `;
+        }
+
+        function renderDirectors() {
+            const grid = document.getElementById('directorsGrid');
+            if(directors.length === 0) { grid.innerHTML = '<div class="col-span-full text-center text-slate-600 text-xs">No directors added.</div>'; return; }
+            grid.innerHTML = directors.map(d => `
+                <div class="bg-slate-800 rounded-2xl p-4 text-center border border-slate-700 hover:border-green-500 transition">
+                    <img src="${d.img || 'https://via.placeholder.com/100'}" class="w-20 h-20 rounded-full mx-auto object-cover border-2 border-slate-600 mb-3 shadow-lg">
+                    <h5 class="font-black text-white text-sm uppercase">${d.name}</h5>
+                    <p class="text-[10px] text-green-400 font-bold mt-1 uppercase tracking-wide">${d.role}</p>
+                </div>
+            `).join('');
+        }
+
+        // ================= INTERACTIONS =================
+        function showAllCategories() {
+            document.getElementById('categoryRow').scrollIntoView({behavior: 'smooth'});
+        }
+
+        function filterCategory(cat) {
+            const filtered = products.filter(p => p.category === cat);
+            renderProducts(filtered, `Category: ${cat}`);
+            document.getElementById('productSectionTitle').scrollIntoView({behavior: 'smooth'});
+        }
+
+        function showAllProducts() {
+            renderProducts(products, 'All Products');
+        }
+
+        function searchProducts() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            if(!q) { renderProducts(products.slice(0, 8), 'Featured Products'); return; }
+            const filtered = products.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+            renderProducts(filtered, `Search Results for "${q}"`);
+        }
+
+        // ================= CART & CHECKOUT =================
+        function toggleCart() {
+            const drawer = document.getElementById('cartDrawer');
+            const overlay = document.getElementById('cartOverlay');
+            if(drawer.classList.contains('translate-x-full')) {
+                drawer.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                overlay.classList.add('block');
+            } else {
+                drawer.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('block');
+            }
+        }
+
+        function addToCartEx(id) {
+            const prod = products.find(p => p.id === id);
+            if(!prod) return;
+            const exist = cart.find(i => i.id === id);
+            if(exist) { exist.qty += 1; } 
+            else { cart.push({...prod, qty: 1}); }
+            saveCart();
+            updateCartUI();
+            
+            // Animation feedback
+            toggleCart(); 
+            setTimeout(toggleCart, 1500);
+        }
+
+        function updateCartQty(id, change) {
+            const item = cart.find(i => i.id === id);
+            if(item) {
+                item.qty += change;
+                if(item.qty <= 0) cart = cart.filter(i => i.id !== id);
+                saveCart();
+                updateCartUI();
+            }
+        }
+
+        function saveCart() { localStorage.setItem('jsuper_cart', JSON.stringify(cart)); }
+
+        function updateCartUI() {
+            document.getElementById('cartCountBadge').innerText = cart.reduce((acc, i) => acc + i.qty, 0);
+            const list = document.getElementById('cartItemsList');
+            let total = 0;
+            if(cart.length === 0) { list.innerHTML = '<div class="text-center text-slate-500 py-10">Cart is empty</div>'; document.getElementById('cartTotal').innerText = 'Rs. 0.00'; return; }
+            
+            list.innerHTML = cart.map(i => {
+                const itemTotal = i.qty * parseFloat(i.price);
+                total += itemTotal;
+                const unit = i.isWeight === 'true' ? 'Kg' : 'Unit';
+                return `
+                    <div class="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 mb-3 shadow-sm">
+                        <img src="${i.img||'https://via.placeholder.com/50'}" class="w-12 h-12 rounded object-cover border">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-xs text-slate-800 leading-tight">${i.name}</h4>
+                            <div class="text-[10px] text-slate-500">Rs.${parseFloat(i.price).toFixed(2)} / ${unit}</div>
+                            <div class="font-black text-green-700 text-sm mt-1">Rs.${itemTotal.toFixed(2)}</div>
+                        </div>
+                        <div class="flex flex-col items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
+                            <button onclick="updateCartQty(${i.id}, 1)" class="text-slate-600 hover:text-green-600 px-2 py-1"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                            <span class="font-bold text-xs">${i.qty}</span>
+                            <button onclick="updateCartQty(${i.id}, -1)" class="text-slate-600 hover:text-red-600 px-2 py-1"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('cartTotal').innerText = `Rs. ${total.toFixed(2)}`;
+        }
+
+        // ================= CUSTOMER & CHECKOUT REALISTIC FLOW =================
+        function checkCustomerState() {
+            const link = document.getElementById('authLink');
+            if(customer) {
+                link.innerHTML = `<i class="fa-solid fa-user-check text-green-400"></i> Hi, ${customer.name.split(' ')[0]}`;
+                document.getElementById('custName').value = customer.name;
+                document.getElementById('custPhone').value = customer.phone;
+                document.getElementById('custAddress').value = customer.address;
+            } else {
+                link.innerHTML = `<i class="fa-solid fa-user"></i> Sign In / Account`;
+            }
+        }
+
+        function openAuthModal(isCheckout = false) {
+            document.getElementById('isCheckoutAction').value = isCheckout;
+            document.getElementById('authTitle').innerText = isCheckout ? "Delivery Details" : "Customer Login";
+            document.getElementById('authBtnText').innerText = isCheckout ? "Place Order via WhatsApp" : "Save Details";
+            document.getElementById('authModal').classList.add('modal-active');
+            if(!isCheckout) toggleCart(); // Close cart if just logging in
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('modal-active');
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            customer = {
+                name: document.getElementById('custName').value,
+                phone: document.getElementById('custPhone').value,
+                address: document.getElementById('custAddress').value
+            };
+            localStorage.setItem('jsuper_customer', JSON.stringify(customer));
+            checkCustomerState();
+            closeAuthModal();
+
+            const isCheckout = document.getElementById('isCheckoutAction').value === 'true';
+            if(isCheckout) {
+                finalizeOrder();
+            } else {
+                alert("Account details saved locally.");
+            }
+        }
+
+        function proceedToCheckout() {
+            if(cart.length === 0) { alert("Cart is empty!"); return; }
+            openAuthModal(true);
+        }
+
+        function finalizeOrder() {
+            if(!customer) return;
+            
+            // Calculate Total
+            let total = cart.reduce((acc, i) => acc + (i.qty * parseFloat(i.price)), 0);
+            
+            // 1. Save to LocalStorage for Admin Backend to trigger Sound Notification
+            const orders = JSON.parse(localStorage.getItem('jsuper_orders')) || [];
+            const newOrder = {
+                id: 'ORD-' + Date.now(),
+                date: new Date().toLocaleString(),
+                customer: customer,
+                items: cart,
+                total: total
+            };
+            orders.unshift(newOrder); // Add to top
+            localStorage.setItem('jsuper_orders', JSON.stringify(orders));
+
+            // 2. Generate WhatsApp Message (Realistic E-commerce flow)
+            let msg = `*NEW ORDER - ${newOrder.id}* %0A`;
+            msg += `-----------------------%0A`;
+            msg += `*Customer:* ${customer.name}%0A`;
+            msg += `*Phone:* ${customer.phone}%0A`;
+            msg += `*Address:* ${customer.address || 'Pickup'}%0A`;
+            msg += `-----------------------%0A`;
+            msg += `*ITEMS:*%0A`;
+            
+            cart.forEach(i => {
+                const unit = i.isWeight === 'true' ? 'Kg' : 'Unit';
+                msg += `> ${i.name} (${i.qty} ${unit}) - Rs.${(i.qty * parseFloat(i.price)).toFixed(2)}%0A`;
+            });
+            
+            msg += `-----------------------%0A`;
+            msg += `*TOTAL: Rs. ${total.toFixed(2)}*%0A`;
+            msg += `-----------------------%0A`;
+            msg += `_Sent via J SUPER.LK Website_`;
+
+            // Clear Cart
+            cart = [];
+            saveCart();
+            updateCartUI();
+            toggleCart();
+
+            // Show Success Modal & Redirect
+            document.getElementById('successModal').classList.add('modal-active');
+            
+            const adminPhone = settings.waAdmin.replace(/[^0-9]/g, '') || "94706717695";
+            setTimeout(() => {
+                document.getElementById('successModal').classList.remove('modal-active');
+                window.open(`https://wa.me/${adminPhone}?text=${msg}`, '_blank');
+            }, 2500);
+        }
+
+    </script>
+
+    <script>
+        const originalRenderInventory = renderInventory;
+        
+        function filterProducts() {
+            const q = document.getElementById('topSearchBar').value.toLowerCase();
+            const all = JSON.parse(localStorage.getItem('grocery_inventory')) || [];
+            const filtered = all.filter(x => x.name.toLowerCase().includes(q) || x.category.toLowerCase().includes(q));
+            renderInventoryGrid(filtered);
+        }
+        
+        function renderInventoryGrid(itemsToRender) {
+            const grid = document.getElementById('groceryItemsGrid');
+            grid.innerHTML = '';
+            if(itemsToRender.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center text-slate-500 text-sm py-10 font-bold">No items found.</div>';
+                return;
+            }
+            itemsToRender.forEach(p => {
+                const img = p.image || 'https://via.placeholder.com/200?text=No+Image';
+                const ut = p.isScale ? '1kg' : '1 Unit';
+                const inputHtml = p.isScale ? 
+                    `<input type="number" id="qty_${p.id}" value="1" step="0.1" min="0.1" class="w-16 p-1.5 border rounded-lg text-xs font-black text-center focus:outline-none focus:border-green-500">` : 
+                    `<div class="flex items-center bg-slate-100 rounded-lg border border-slate-200"><button onclick="document.getElementById('qty_${p.id}').value = Math.max(1, parseInt(document.getElementById('qty_${p.id}').value)-1)" class="px-2 py-1 hover:text-green-600"><i class="fa-solid fa-minus text-[10px]"></i></button><input type="number" id="qty_${p.id}" value="1" min="1" readonly class="w-8 bg-transparent text-center text-xs font-black outline-none pointer-events-none"><button onclick="document.getElementById('qty_${p.id}').value = parseInt(document.getElementById('qty_${p.id}').value)+1" class="px-2 py-1 hover:text-green-600"><i class="fa-solid fa-plus text-[10px]"></i></button></div>`;
+                
+                grid.innerHTML += `<div class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-green-100 flex flex-col group animate-card relative overflow-hidden"><span class="absolute top-2 left-2 bg-green-100 text-green-800 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest shadow-sm z-10">${p.category}</span><div class="relative w-full h-32 md:h-40 mb-4 overflow-hidden rounded-xl bg-white"><img src="${img}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"></div><h4 class="font-black text-slate-800 text-xs md:text-sm leading-tight mb-1 line-clamp-2">${p.name}</h4><div class="flex justify-between items-end mt-auto pt-3 border-t border-slate-100"><div class="flex flex-col"><span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Per ${ut}</span><span class="font-black text-green-700 text-sm md:text-base">Rs. ${p.price.toFixed(2)}</span></div><div class="flex items-center gap-2">${inputHtml}<button onclick="addToCartEx(${p.id}, '${ut}')" class="bg-gradient-to-br from-green-600 to-green-700 text-white w-8 h-8 md:w-9 md:h-9 rounded-xl flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all shadow-md"><i class="fa-solid fa-cart-plus text-xs md:text-sm"></i></button></div></div></div>`;
+            });
+        }
+        
+        // Override renderInventory to only show top 8 by default unless searched/filtered
+        renderInventory = function(filterCat = null) {
+            const all = JSON.parse(localStorage.getItem('grocery_inventory')) || [];
+            let filtered = all;
+            if(filterCat) {
+                filtered = all.filter(x => x.category === filterCat);
+            } else {
+                // Front page limit to 8
+                filtered = all.slice(0, 8);
+            }
+            renderInventoryGrid(filtered);
+            
+            // Also render Nav & Ads here once
+            renderFrontSettings();
+        }
+        
+        function renderFrontSettings() {
+            const set = JSON.parse(localStorage.getItem('grocery_settings')) || {};
+            const navs = (set.navLinks || 'ALL PROMOTIONS, J SUPER PRODUCTS, EXCLUSIVES, LOYALTY, COMMUNITY, HELP').split(',').map(x=>x.trim());
+            const navGroup = document.getElementById('topNavLinksGroup');
+            navGroup.innerHTML = `<a href="#" class="hover:text-green-400 transition whitespace-nowrap">DELIVERY TYPE</a>
+                                  <a href="#" class="text-green-400 transition whitespace-nowrap" onclick="renderInventory(null); document.getElementById('groceryItemsGrid').scrollIntoView({behavior:'smooth'})">CATEGORIES</a>`;
+            navs.forEach(n => {
+                navGroup.innerHTML += `<a href="#" class="hover:text-green-400 transition whitespace-nowrap">${n}</a>`;
+            });
+            
+            const ads = JSON.parse(localStorage.getItem('grocery_ads')) || [];
+            const adCon = document.getElementById('frontAdsContainer');
+            const adTrack = document.getElementById('adsTrack');
+            if(ads.length > 0) {
+                adCon.classList.remove('hidden');
+                adTrack.innerHTML = ads.map(a => `<img src="${a.img}" class="w-full h-full object-cover flex-shrink-0" style="min-width: 100%;">`).join('');
+                if(ads.length > 1) {
+                    let idx = 0;
+                    setInterval(() => {
+                        idx = (idx + 1) % ads.length;
+                        adTrack.style.transform = `translateX(-${idx * 100}%)`;
+                    }, 3000);
+                }
+            } else {
+                adCon.classList.add('hidden');
+            }
+        }
+    </script>
+
+</body>
+</html>

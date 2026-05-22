@@ -654,4 +654,23 @@
         }
     </script>
 </body>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+  // ඔයාගේ Firebase කෝඩ් එක
+  const firebaseConfig = {
+    apiKey: "AIzaSyCNY4exbPQ37xRC9EdnszLj8wPBtvkdORE",
+    authDomain: "j-super-78993.firebaseapp.com",
+    projectId: "j-super-78993",
+    storageBucket: "j-super-78993.firebasestorage.app",
+    messagingSenderId: "474923446710",
+    appId: "1:474923446710:web:dd243689e1c54fe8d7d117"
+  };
+
+  // Firebase සහ Database එක Start කිරීම
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  console.log("Database Connected Successfully! 🎉");
+</script>
 </html>

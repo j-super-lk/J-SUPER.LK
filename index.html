@@ -16,7 +16,6 @@
         html { scroll-behavior: smooth; }
         body { font-family: 'Roboto', sans-serif; overflow-x: hidden; min-height: 100vh; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
         .modal-active { display: flex !important; }
         .bg-brand { background-color: #16a34a; }
         .hover-bg-brand:hover { background-color: #15803d; }
@@ -37,6 +36,7 @@
     </script>
 </head>
 <body class="text-gray-800 flex flex-col min-h-screen">
+    
     <header class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <a href="index.html" class="font-bold text-xl">J SUPER.LK</a>
@@ -45,13 +45,11 @@
     </header>
 
     <main class="flex-grow max-w-7xl mx-auto px-4 py-6 w-full">
-        <div id="productGrid" class="grid grid-cols-2 gap-3">
-            <p>Loading Products...</p>
-        </div>
+        <div id="productGrid" class="grid grid-cols-2 gap-3"></div>
     </main>
 
     <script>
-        // 1. Authentication Logic
+        // --- අලුත් Auth Logic ---
         function registerUser(email, password) {
             auth.createUserWithEmailAndPassword(email, password)
             .then(uc => {
@@ -61,18 +59,28 @@
             }).catch(e => alert(e.message));
         }
 
-        // 2. Data Fetching
-        function fetchFirebaseData() {
-            db.collection("products").onSnapshot(snapshot => {
-                // ඔබේ products ලෝඩ් කිරීමේ logic එක මෙතන තියෙන්න ඕනේ
-                console.log("Data loaded");
-            });
+        function loginUser(email, password) {
+            auth.signInWithEmailAndPassword(email, password)
+            .then(uc => {
+                if (uc.user.emailVerified) {
+                    window.location.href = "admin.html";
+                } else {
+                    alert("කරුණාකර ඊමේල් වෙරිෆයි කරන්න.");
+                    auth.signOut();
+                }
+            }).catch(e => alert(e.message));
         }
 
-        // 3. Page Init
+        // --- පරණ Logic ---
         document.addEventListener("DOMContentLoaded", () => {
             fetchFirebaseData();
         });
+
+        function fetchFirebaseData() {
+            db.collection("products").onSnapshot(snapshot => {
+                console.log("Products Loaded");
+            });
+        }
     </script>
 </body>
 </html>
